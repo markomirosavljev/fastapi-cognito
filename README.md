@@ -1,10 +1,10 @@
-#FastAPI - Cognito
+# FastAPI - Cognito
 FastAPI Cognito library is Python library which is built to ease usage of AWS Cognito authentication
 with FastAPI framework. This library was built for personal usage on single project, and it has only
 essential and necessary functions/tools that we needed on our project, in future it may be extended
 with more tools.This package will be deployed on our AWS CodeArtifact.
 
-##Requirements
+## Requirements
 
 Before we start using this library, there are some requirements:
 * Python >=3.8
@@ -12,7 +12,7 @@ Before we start using this library, there are some requirements:
 * AWS Cognito Service
 * AWS CLI
 
-##How to install
+## How to install
 * Configure a client with login command:
 ```
 aws codeartifact login --tool pip --domain {domain} --domain-owner {domain_owner} --repository {repository}
@@ -31,7 +31,7 @@ If we want to install packages from pypi, execute the following command:
 pip install -i https://pypi.org/simple {library}
 ```
 
-##How to use
+## How to use
 This is the simple example of how to use this package:
 
 * Add all required imports
@@ -55,7 +55,6 @@ class Settings(BaseSettings):
 * Initialize application and settings object, also initialize CognitoAuth and pass previously created
 settings as settings param.
 ```
-
 app = FastAPI()
 settings = Settings()
 cognito = CognitoAuth(settings=settings)

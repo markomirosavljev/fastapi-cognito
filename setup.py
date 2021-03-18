@@ -23,9 +23,10 @@ setuptools.setup(
         "License :: MIT License",
         "Operating System :: OS Independent",
     ],
-    package_dir={"": "fastapi_cognito"},
-    packages=setuptools.find_packages(where="fastapi_cognito"),
+    package_dir={"": "src"},
+    packages=setuptools.find_packages(where='src'),
+    py_modules=['fastapi_cognito', 'exceptions'],
     install_requires=['fastapi',
-                      'cognitojwt'],
+                      'cognitojwt[sync]'],
     python_requires=">=3.8",
 )
