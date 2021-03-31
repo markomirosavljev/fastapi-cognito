@@ -1,16 +1,17 @@
 from .exceptions import CognitoAuthError
 from cognitojwt import CognitoJWTException, decode as cognito_jwt_decode
 from jose import JWTError
+from functools import wraps
 
 from fastapi.requests import Request
 from pydantic import BaseSettings
 from fastapi.exceptions import HTTPException
-from typing import List
+from typing import List, Dict
 
 CONFIG_DEFAULTS = {
-    'check_expiration': True,
-    'jwt_header_name': 'Authorization',
-    'jwt_header_prefix': 'Bearer'
+    "check_expiration": True,
+    "jwt_header_name": "Authorization",
+    "jwt_header_prefix": "Bearer"
 }
 
 
@@ -20,12 +21,11 @@ class CognitoAuth(object):
     """
 
     def __init__(self, settings: BaseSettings = None):
-        self._region = None
-        self._userpool_id = None
-        self._jwt_header_name = None
-        self._jwt_header_prefix = None
-        self._check_expiration = None
-        self._app_client_id = None
+        self.userpools: dict
+        self.default_userpool: str
+        self.jwt_header_name: str
+        self.jwt_header_prefix: str
+        self.check_expiration: bool
 
         if settings is not None:
             self._add_settings(settings)
@@ -39,16 +39,17 @@ class CognitoAuth(object):
         for config, value in CONFIG_DEFAULTS.items():
             self.__setattr__(config, value)
 
-        # set all required configurations and check with _get_required_setting method.
-        self._region = self._get_required_setting(settings, 'COGNITO_REGION')
-        self._userpool_id = self._get_required_setting(settings, 'COGNITO_USERPOOL_ID')
-        self._app_client_id = self._get_required_setting(settings, 'COGNITO_APP_CLIENT_ID')
-        self._jwt_header_name = self._get_required_setting(settings, 'COGNITO_JWT_HEADER_NAME')
-        self._jwt_header_prefix = self._get_required_setting(settings, 'COGNITO_JWT_HEADER_PREFIX')
-        self._check_expiration = self._get_required_setting(settings, 'COGNITO_CHECK_TOKEN_EXPIRATION')
+        # set all required configurations from settings object and check with _get_required_setting method.
+        self.userpools = self._get_required_setting(settings, "userpools")
+        self.jwt_header_name = self._get_required_setting(settings, "jwt_header_name")
+        self.jwt_header_prefix = self._get_required_setting(settings, "jwt_header_prefix")
+        self.check_expiration = self._get_required_setting(settings, "check_expiration")
+
+        # set all configurations based on configs read out of settings file.
+        self.default_userpool = list(self.userpools.values())[0]
 
     @staticmethod
-    def _get_required_setting(settings, config):
+    def _get_required_setting(settings, config) -> [str, Dict]:
         """
         This method is used to check if required configurations exist in 'settings' object passed as param.
 
@@ -69,7 +70,7 @@ class CognitoAuth(object):
                 f"{config} not found in settings object but it is required.") from error
         return val
 
-    def _get_token(self, request: Request):
+    def _get_token(self, request: Request) -> str:
         """
         This method will get headers from request from params, and check various cases if Authorization header exists or
         if its valid.
@@ -79,19 +80,19 @@ class CognitoAuth(object):
         :param request: Incoming request that need authorization to proceed.
         :return: Authorization header value(token)
         """
-        auth_header_value = request.headers.get(self._jwt_header_name)
+        auth_header_value = request.headers.get(self.jwt_header_name)
         if not auth_header_value:
-            raise HTTPException(status_code=401, detail='Request does not contain well-formed Cognito JWT')
+            raise HTTPException(status_code=401, detail="Request does not contain well-formed Cognito JWT")
 
         header_parts = auth_header_value.split()
-        if self._jwt_header_prefix not in header_parts:
+        if self.jwt_header_prefix not in header_parts:
             raise HTTPException(status_code=401, detail="Invalid Cognito JWT Header -"
                                                         " Missing authorization header prefix")
 
-        if header_parts[0].lower() != self._jwt_header_prefix.lower():
+        if header_parts[0].lower() != self.jwt_header_prefix.lower():
             raise HTTPException(status_code=401, detail=f"Invalid Cognito JWT Header - Unsupported authorization"
                                                         f"type. Header prefix '{header_parts[0].lower()}' does not "
-                                                        f"match '{self._jwt_header_prefix.lower()}'")
+                                                        f"match '{self.jwt_header_prefix.lower()}'")
         elif len(header_parts) == 1:
             raise HTTPException(status_code=401, detail="Invalid Cognito JWT Header - Token missing")
         elif len(header_parts) > 2:
@@ -99,18 +100,25 @@ class CognitoAuth(object):
 
         return header_parts[1]
 
-    def _decode_token(self, token) -> dict:
+    def _decode_token(self, token, userpool_name: str = None) -> Dict:
         """
         This method is using cognito_jwt_decode to decode token and verify if token is valid.
         :param token: token that needs to be decoded and verified.
         :return: decoded and verified cognito jwt claims or 401
         """
         try:
+            userpool = self.userpools[userpool_name]
+        except KeyError:
+            raise CognitoAuthError("Userpool not found",
+                                   f"Userpool with name '{userpool_name}' does not exist in provided config file")
+        try:
             return cognito_jwt_decode(
-                region=self._region,
                 token=token,
-                userpool_id=self._userpool_id,
-                app_client_id=self._app_client_id)
+                region=userpool.get("region")if userpool else self.default_userpool.get("region"),
+                userpool_id=userpool.get("userpool_id")if userpool else self.default_userpool.get("userpool_id"),
+                app_client_id=userpool.get("app_client_id")if userpool else self.default_userpool.get("app_client_id"),
+                testmode=not self.check_expiration
+            )
         except (ValueError, JWTError):
             raise HTTPException(status_code=401, detail="Malformed authentication token")
 
@@ -122,13 +130,13 @@ class CognitoAuth(object):
         return true, and user will have access to resource, else it will raise 401 - Unauthorized exception.
         :return: Boolean True, or 401
         """
-        if 'cognito:groups' not in claims or claims['cognito:groups'] is None:
+        if "cognito:groups" not in claims or claims["cognito:groups"] is None:
             raise HTTPException(status_code=401, detail="Not Authorized - User doesn't have access to this resource")
-        if all([i not in claims['cognito:groups'] for i in groups]):
+        if all([i not in claims["cognito:groups"] for i in groups]):
             raise HTTPException(status_code=401, detail="Not Authorized - User doesn't have access to this resource")
         return True
 
-    def cognito_auth_required(self, request: Request) -> dict:
+    def _cognito_auth_required(self, request: Request = None, userpool_name: str = None) -> Dict:
         """
         This method will get token from request header with _get_token() method, and extract decoded and verified
         payload of token with _decode_token() method. If _decode_token() method fails in any point and can't decode/
@@ -139,7 +147,26 @@ class CognitoAuth(object):
         token = self._get_token(request)
 
         try:
-            payload = self._decode_token(token)
+            payload = self._decode_token(token=token, userpool_name=userpool_name)
         except CognitoJWTException as error:
             raise HTTPException(status_code=401, detail=str(error))
         return payload
+
+    def cognito_auth_required(self, userpool_name: str = None):
+        """
+        This decorator will be used when some endpoint should be protected and will require Cognito Authentication.
+        Decorator should be called as last decorator on function under all other decorators and optionally it may have
+        userpool_name param that will change target userpool from default userpool set to userpool that is matching
+        passed userpool_name param. When decorator resolve his tasks, it will return decoded and verified Cognito token
+        into 'token' kwarg.
+        :param userpool_name: Name of userpool that should be used for some endpoint.
+        :return: updated function
+        """
+        def main_wrapper(func):
+            @wraps(func)
+            def wrapper(*args, **kwargs):
+                kwargs["token"] = self._cognito_auth_required(request=kwargs.get("request"),
+                                                              userpool_name=userpool_name)
+                return func(*args, **kwargs)
+            return wrapper
+        return main_wrapper

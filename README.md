@@ -10,62 +10,80 @@ Before we start using this library, there are some requirements:
 * Python >=3.8
 * FastAPI 
 * AWS Cognito Service
-* AWS CLI
 
 ## How to install
-* Configure a client with login command:
-```
-aws codeartifact login --tool pip --domain {domain} --domain-owner {domain_owner} --repository {repository}
-```
-This command will set pip to use index-url of repository passed in --repository option.
 
-First step is to install this package into your local environment by executing the following command in 
-terminal:
-
-**Note: This will install from a repository configured with** _aws codeartifact login_ 
+### Pip Command
 ```
-pip install fastapi-cognito
-```
-If we want to install packages from pypi, execute the following command:
-```
-pip install -i https://pypi.org/simple {library}
+pip install fastapi-cognito --extra-index-url https://__token__:<your_personal_token>@gitlab.com/api/v4/projects/25240961/packages/pypi/simple
 ```
 
 ## How to use
 This is the simple example of how to use this package:
 
 * Add all required imports
-```
-from fastapi_cognito import CognitoAuth
+```python
+from fastapi_cognito import CognitoAuth, CognitoSettings
 from fastapi import FastAPI, Depends
 from pydantic import BaseSettings
 ```
-* Create Settings class that inherits BaseSettings from pydantic:
+* Provide settings that are mandatory for CognitoAuth library. 
+  
+All mandatory fields are defined in CognitoSettings
+BaseSettings object. Settings can be provided by multiple methods. You can provide all required settings in **.yaml** or
+  **.json** files, or your global BaseSettings file. Note that userpools field is Dict, **first** user pool in a dict
+will be set as default automatically. All fields shown in example below, are also required in .json or .yaml file
+(with syntax matching those files.)
 
 **Note: These configurations are required**
-```
+```python
 class Settings(BaseSettings):
-    COGNITO_REGION = 'YOUR_AWS_REGION'
-    COGNITO_USERPOOL_ID = 'COGNITO_USERPOOL_ID'
-    COGNITO_APP_CLIENT_ID = 'COGNITO_APP_CLIENT_ID'
-    COGNITO_CHECK_TOKEN_EXPIRATION = True
-    COGNITO_JWT_HEADER_NAME = 'Authorization'
-    COGNITO_JWT_HEADER_PREFIX = 'Bearer'
+    
+    check_expiration = True
+    jwt_header_name = 'Authorization'
+    jwt_header_prefix = 'Bearer'
+    userpools = {
+      "europe": {
+        "region": "eu-west-1",
+        "userpool_id": "COGNITO_USERPOOL_ID",
+        "app_client_id": "APP_CLIENT_ID"
+      }
+      ...
+    }
 ```
 * Initialize application and settings object, also initialize CognitoAuth and pass previously created
 settings as settings param.
-```
+  
+This example is showing how global BaseSettings object can be mapped to CognitoSettings object and passed as param to
+CognitoAuth object. If we were using .yaml or .json, we should call **.from_yaml(_filename_)** or
+**.from_json(_filename_)** methods on CognitoSettings object. If we used any other method, we don't need **settings**
+variable.
+```python
 app = FastAPI()
 settings = Settings()
-cognito = CognitoAuth(settings=settings)
+cognito = CognitoAuth(settings=CognitoSettings.from_global_settings(settings))
 ```
-* This is a simple endpoint that is protected by cognito, when dependency is resolved, cognito_token will
-store decoded and verified Cognito JWT token. It can be used later to add more security to endpoints and
-  to get required data about user which token belongs to.
-```
+* This is a simple endpoint that is protected by cognito, decorator is doing all the work about decoding and verifying
+  Cognito JWT from request Authorization header and storing it in token param. 
+  It can be used later to add more security to endpoints and to get required data about user which token belongs to.
+  Method will use default userpool if userpool_name param was not provided.
+  
+**Note: request and token params are required to be in path operation params exactly how they are in example.**
+```python
 @app.get('/')
-def hello_world(cognito_token=Depends(cognito.cognito_auth_required)):
+@cognito.cognito_auth_required()
+def hello_world(request:Request, token: Dict = None):
     return {'message': 'Hello world'}
 ```
+You can also change userpool that should be used when calling cognito_auth_required() method by passing
+**userpool_name** param, in other case, method will use default userpool.
+```python
+@app.get('/')
+@cognito.cognito_auth_required(userpool_name="europe")
+def hello_world(request:Request, token: Dict = None):
+    return {'message': 'Hello world'}
+```
+
+
 There are some additional methods such as check_cognito_groups(token, groups) which will check if cognito:groups value
 from **_token_** param matches the value passed in **_groups_** param, and it will restrict or allow access to users.
