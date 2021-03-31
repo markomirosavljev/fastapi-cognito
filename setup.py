@@ -5,13 +5,13 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="fastapi-cognito",
-    version="1.0.0",
+    version="1.0.1",
     author="Marko Mirosavljev",
     author_email="marko.mirosavljev@cyterma.com",
     description="Basic AWS cognito authentication package for FastAPI",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    license='MIT',
+    license="MIT",
     url="https://gitlab.com/cyterma/normius/fastapi-cognito",
     project_urls={
     },
@@ -24,9 +24,10 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     package_dir={"": "src"},
-    packages=setuptools.find_packages(where='src'),
-    py_modules=['fastapi_cognito', 'exceptions'],
-    install_requires=['fastapi',
-                      'cognitojwt[sync]'],
+    packages=setuptools.find_packages(where="src"),
+    py_modules=["fastapi_cognito", "exceptions"],
+    install_requires=["fastapi",
+                      "cognitojwt[sync]",
+                      "pyYAML"],
     python_requires=">=3.8",
 )
