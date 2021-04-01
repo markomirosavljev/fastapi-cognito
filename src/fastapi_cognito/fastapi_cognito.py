@@ -106,11 +106,7 @@ class CognitoAuth(object):
         :param token: token that needs to be decoded and verified.
         :return: decoded and verified cognito jwt claims or 401
         """
-        try:
-            userpool = self.userpools[userpool_name]
-        except KeyError:
-            raise CognitoAuthError("Userpool not found",
-                                   f"Userpool with name '{userpool_name}' does not exist in provided config file")
+        userpool = self.userpools.get(userpool_name) if userpool_name else None
         try:
             return cognito_jwt_decode(
                 token=token,
@@ -147,7 +143,7 @@ class CognitoAuth(object):
         token = self._get_token(request)
 
         try:
-            payload = self._decode_token(token=token, userpool_name=userpool_name)
+            payload = self._decode_token(token=token, userpool_name=userpool_name if userpool_name else None)
         except CognitoJWTException as error:
             raise HTTPException(status_code=401, detail=str(error))
         return payload
