@@ -3,7 +3,7 @@ from cognitojwt import CognitoJWTException, decode as cognito_jwt_decode
 from jose import JWTError
 from functools import wraps
 
-from fastapi.requests import Request
+from starlette_context import context
 from pydantic import BaseSettings
 from fastapi.exceptions import HTTPException
 from typing import List, Dict
@@ -70,17 +70,16 @@ class CognitoAuth(object):
                 f"{config} not found in settings object but it is required.") from error
         return val
 
-    def _get_token(self, request: Request) -> str:
+    def _get_token(self) -> str:
         """
         This method will get headers from request from params, and check various cases if Authorization header exists or
         if its valid.
 
         Method will fetch Authorization header value and split it, so it can analyse if header prefix or token string is
         valid. If everything is valid, it will return token string.
-        :param request: Incoming request that need authorization to proceed.
         :return: Authorization header value(token)
         """
-        auth_header_value = request.headers.get(self.jwt_header_name)
+        auth_header_value = context.get(self.jwt_header_name)
         if not auth_header_value:
             raise HTTPException(status_code=401, detail="Request does not contain well-formed Cognito JWT")
 
@@ -98,6 +97,7 @@ class CognitoAuth(object):
         elif len(header_parts) > 2:
             raise HTTPException(status_code=401, detail="Invalid Cognito JWT Header - Token contains spaces")
 
+        context.pop("Authorization")
         return header_parts[1]
 
     def _decode_token(self, token, userpool_name: str = None) -> Dict:
@@ -132,15 +132,14 @@ class CognitoAuth(object):
             raise HTTPException(status_code=401, detail="Not Authorized - User doesn't have access to this resource")
         return True
 
-    def _cognito_auth_required(self, request: Request = None, userpool_name: str = None) -> Dict:
+    def _cognito_auth_required(self, userpool_name: str = None) -> Dict:
         """
-        This method will get token from request header with _get_token() method, and extract decoded and verified
+        This method will get token from request context with _get_token() method, and extract decoded and verified
         payload of token with _decode_token() method. If _decode_token() method fails in any point and can't decode/
         verify token, method will raise CognitoJWTException, else, it will return decoded and verified payload.
-        :param request: request from which this method will get authorization header with token.
         :return: decoded payload or 401
         """
-        token = self._get_token(request)
+        token = self._get_token()
 
         try:
             payload = self._decode_token(token=token, userpool_name=userpool_name if userpool_name else None)
@@ -154,15 +153,28 @@ class CognitoAuth(object):
         Decorator should be called as last decorator on function under all other decorators and optionally it may have
         userpool_name param that will change target userpool from default userpool set to userpool that is matching
         passed userpool_name param. When decorator resolve his tasks, it will return decoded and verified Cognito token
-        into 'token' kwarg.
+        into 'token' in context.
         :param userpool_name: Name of userpool that should be used for some endpoint.
         :return: updated function
         """
         def main_wrapper(func):
             @wraps(func)
             def wrapper(*args, **kwargs):
-                kwargs["token"] = self._cognito_auth_required(request=kwargs.get("request"),
-                                                              userpool_name=userpool_name)
+                context["token"] = self._cognito_auth_required(userpool_name=userpool_name)
                 return func(*args, **kwargs)
             return wrapper
         return main_wrapper
+
+    @staticmethod
+    def get_token():
+        """
+        This method will return whole token payload from current request context.
+        """
+        return context.get("token")
+
+    @staticmethod
+    def get_cognito_id():
+        """
+        This method will return Cognito ID from current JWT stored in request context.
+        """
+        return context.get("token")["sub"]
