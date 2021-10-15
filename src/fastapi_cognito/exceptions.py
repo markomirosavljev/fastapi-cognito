@@ -1,6 +1,7 @@
 class CognitoAuthError(Exception):
     """
-    Default exception that will be raised each time an error is in relation with CognitoAuth
+    Default exception that will be raised each time an error is in relation with
+    CognitoAuth
     """
     def __init__(self, error, description, status_code=401, headers=None):
         self.error = error

@@ -6,7 +6,8 @@ from typing import Dict
 
 class CognitoSettings(BaseSettings):
     """
-    This class contains all mandatory fields which should get values from provided config file
+    This class contains all mandatory fields which should get values from
+    provided config file
     """
     check_expiration: bool
     jwt_header_name: str
@@ -19,7 +20,8 @@ class CognitoSettings(BaseSettings):
     @classmethod
     def from_global_settings(cls, global_settings: BaseSettings):
         """
-        Parse configurations from global BaseSettings object where all configurations could be provided.
+        Parse configurations from global BaseSettings object where all
+        configurations could be provided.
         :param global_settings: global BaseSettings object.
         :return: mapped CognitoSettings class
         """
