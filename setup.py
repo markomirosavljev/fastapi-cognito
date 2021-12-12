@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="fastapi-cognito",
-    version="1.1.0",
+    version="2.0.0",
     author="Marko Mirosavljev",
     author_email="mirosavljevm023@gmail.com",
     description="Basic AWS cognito authentication package for FastAPI",
@@ -18,13 +18,14 @@ setuptools.setup(
     classifiers=[
         "Programming Language :: Python :: 3",
         "Operating System :: OS Independent",
+        "Framework :: FastAPI",
+        "Intended Audience :: Developers"
     ],
     package_dir={"": "src"},
     packages=setuptools.find_packages(where="src"),
     py_modules=["fastapi_cognito"],
     install_requires=["fastapi",
                       "cognitojwt[sync]",
-                      "pyYAML",
-                      "starlette-context"],
+                      "pyYAML"],
     python_requires=">=3.8",
 )
