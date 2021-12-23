@@ -1,6 +1,6 @@
 # FastAPI - Cognito
-FastAPI extension that is build to ease usage of  AWS Cognito Auth with FastAPI.
-This library provides basic functions/tools which allow developers to use
+FastAPI package that ease usage of AWS Cognito Auth.
+This package provides basic functions/tools which helps developers to use
 Cognito JWT.
 
 ## Requirements
@@ -29,12 +29,12 @@ BaseSettings object. Settings can be added in different ways.
 You can provide all required settings in **.yaml** or **.json** files,
 or your global BaseSettings file. Note that userpools field is Dict,
 **FIRST** user pool in a dict will be set as default automatically if
-userpool_name is not provided in CognitoAuth object initialization.
+userpool_name is not provided in CognitoAuth object.
 All fields shown in example below, are also required in .json or .yaml file
 (with syntax matching those files.)
 
 You should also import BaseSettings from pydantic if you are going to use global BaseSettings object.
-* Provide settings that are mandatory for CognitoAuth library. You can provide
+* Provide settings that are mandatory for CognitoAuth to work. You can provide
 one or more userpools.
 
 ```python
@@ -66,7 +66,7 @@ CognitoSettings and passed as param to CognitoAuth.
 If we were using .yaml or .json, we should call **.from_yaml(_filename_)** or
 **.from_json(_filename_)** methods on CognitoSettings object.
 
-* Initialize CognitoAuth and pass previously created settings as settings param.
+* Instantiate CognitoAuth and pass previously created settings as settings param.
   
 ```python
 from fastapi_cognito import CognitoAuth, CognitoSettings
