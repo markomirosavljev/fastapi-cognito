@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="fastapi-cognito",
-    version="2.0.0",
+    version="2.0.3",
     author="Marko Mirosavljev",
     author_email="mirosavljevm023@gmail.com",
     description="Basic AWS cognito authentication package for FastAPI",

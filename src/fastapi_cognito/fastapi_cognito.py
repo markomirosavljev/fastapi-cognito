@@ -7,8 +7,8 @@ from pydantic import BaseSettings
 from requests.exceptions import ConnectionError as HttpConnectionError
 from starlette.requests import Request
 
-from . import UserpoolModel, CognitoToken
 from .exceptions import CognitoAuthError
+from .models import UserpoolModel, CognitoToken
 
 
 class CognitoAuth(object):
@@ -188,4 +188,4 @@ class CognitoAuth(object):
             payload = self._decode_token(token=token)
         except CognitoJWTException as error:
             raise HTTPException(status_code=401, detail=str(error))
-        return TokenModel(**payload)
+        return CognitoToken(**payload)
