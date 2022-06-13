@@ -1,10 +1,12 @@
+from typing import Union, Container
+
 from pydantic import BaseModel, HttpUrl, Field
 
 
 class UserpoolModel(BaseModel):
     region: str
     userpool_id: str
-    app_client_id: str
+    app_client_id: Union[str, Container[str]]
 
 
 class CognitoToken(BaseModel):
