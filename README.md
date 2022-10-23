@@ -89,3 +89,17 @@ from fastapi import Depends
 def hello_world(auth: CognitoToken = Depends(cognito_eu.auth_required)):
     return {"message": "Hello world"}
 ```
+
+### Optional authentication
+
+If authentication should be optional, we can use ```cognito_eu.auth_optional```
+
+Example:
+```python
+from fastapi_cognito import CognitoToken
+from fastapi import Depends
+
+@app.get("/")
+def hello_world(auth: CognitoToken = Depends(cognito_eu.auth_optional)):
+    return {"message": "Hello world"}
+```

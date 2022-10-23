@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Optional
 
 from cognitojwt import CognitoJWTException, decode as cognito_jwt_decode
 from fastapi.exceptions import HTTPException
@@ -172,6 +172,28 @@ class CognitoAuth(object):
                 detail="Unable to establish connection with AWS, "
                        "your userpool region config might be incorrect."
             )
+
+    def auth_optional(self, request: Request) -> Optional[CognitoToken]:
+        """
+        Optional authentication, method will try to parse `Authorization` header
+        if present, else it will return None
+        :param request: Incoming request
+        :return: CognitoToken or None
+        """
+        authorization_header = request.headers.get(
+            self._jwt_header_name.lower()
+        )
+
+        if not authorization_header:
+            return None
+
+        token = self._verify_header(auth_header_value=authorization_header)
+
+        try:
+            payload = self._decode_token(token=token)
+        except CognitoJWTException as error:
+            raise HTTPException(status_code=401, detail=str(error))
+        return CognitoToken(**payload)
 
     def auth_required(self, request: Request) -> CognitoToken:
         """
