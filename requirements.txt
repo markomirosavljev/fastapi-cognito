@@ -24,7 +24,7 @@ pycparser==2.20
 pydantic==1.8.1
 Pygments==2.8.1
 pyparsing==2.4.7
-python-jose==3.2.0
+python-jose==3.3.0
 pywin32-ctypes==0.2.0
 PyYAML==5.4.1
 readme-renderer==29.0

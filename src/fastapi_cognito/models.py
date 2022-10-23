@@ -1,4 +1,4 @@
-from typing import Union, Dict, List, Set, Any
+from typing import Union, Dict, List, Set, Any, Optional
 
 from pydantic import BaseModel, HttpUrl, Field
 
@@ -12,7 +12,7 @@ class UserpoolModel(BaseModel):
 class CognitoToken(BaseModel):
     origin_jti: str
     cognito_id: str = Field(alias="sub")
-    event_id: str
+    event_id: Optional[str]
     token_use: str
     scope: str
     auth_time: int
