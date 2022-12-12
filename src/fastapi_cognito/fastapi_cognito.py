@@ -1,4 +1,4 @@
-from typing import Dict, Optional
+from typing import Dict, Any
 
 from cognitojwt import CognitoJWTException, decode as cognito_jwt_decode
 from fastapi.exceptions import HTTPException
@@ -21,35 +21,46 @@ class CognitoAuth(object):
         Initialization
         :param settings: BaseSettings object with configurations
         :param userpool_name: Optional param which determines which userpool
-        configuration to apply.
+         configuration to apply.
         """
         self._userpool_name: str = userpool_name
         self._userpool: UserpoolModel
         self._jwt_header_name: str
         self._jwt_header_prefix: str
         self._check_expiration: bool
+        self._custom_cognito_token_model: object
 
         self._add_settings(settings)
 
     def _add_settings(self, settings) -> None:
         """
         Set all required configurations from settings object and check validity
-        for each config with _get_required_settings method
+        for each config with `_get_required_settings` method
         :param settings: BaseSettings object where configurations should be
-        provided.
+         provided.
         :return: None
         """
         self._userpool = self._get_required_setting(
-            settings, "userpools", self._userpool_name
+            settings=settings,
+            config="userpools",
+            config_key=self._userpool_name
         )
         self._jwt_header_name = self._get_required_setting(
-            settings, "jwt_header_name"
+            settings=settings,
+            config="jwt_header_name"
         )
         self._jwt_header_prefix = self._get_required_setting(
-            settings, "jwt_header_prefix"
+            settings=settings,
+            config="jwt_header_prefix"
         )
         self._check_expiration = self._get_required_setting(
-            settings, "check_expiration"
+            settings=settings,
+            config="check_expiration"
+        )
+        self._custom_cognito_token_model = self._get_optional_setting(
+            settings=settings,
+            config="custom_cognito_token_model",
+            default_value=CognitoToken
         )
 
     @staticmethod
@@ -69,7 +80,7 @@ class CognitoAuth(object):
          configurations
         :param config: single configuration that should be set
         :param config_key: if config is dict, this key will be used to access
-        required value.
+         required value.
         :return: value of configuration
         """
         try:
@@ -97,11 +108,28 @@ class CognitoAuth(object):
                 from error
         return val
 
+    @staticmethod
+    def _get_optional_setting(settings, config, default_value) -> any:
+        """
+        Set optional setting if provided
+        :param settings: BaseSettings object from which app should read
+         configurations
+        :param config: name of configuration in provided `settings` object
+        :param default_value: Value to set if setting is not provided in
+         `settings` object
+        :return: value to set or None
+        """
+        try:
+            val = settings.__getattribute__(config)
+            return val if val else default_value
+        except AttributeError:
+            return default_value
+
     def _verify_header(self, auth_header_value: str) -> str:
         """
         Check if value in `Authorization` header is valid and return that value
         :param auth_header_value: `Authorization` header value sent with
-        request.
+         request.
         :return: Authorization header value(token)
         """
         if not auth_header_value:
@@ -173,12 +201,12 @@ class CognitoAuth(object):
                        "your userpool region config might be incorrect."
             )
 
-    def auth_optional(self, request: Request) -> Optional[CognitoToken]:
+    def auth_optional(self, request: Request) -> Any:
         """
         Optional authentication, method will try to parse `Authorization` header
         if present, else it will return None
         :param request: Incoming request
-        :return: CognitoToken or None
+        :return: Token Model or None
         """
         authorization_header = request.headers.get(
             self._jwt_header_name.lower()
@@ -193,9 +221,9 @@ class CognitoAuth(object):
             payload = self._decode_token(token=token)
         except CognitoJWTException as error:
             raise HTTPException(status_code=401, detail=str(error))
-        return CognitoToken(**payload)
+        return self._custom_cognito_token_model(**payload)
 
-    def auth_required(self, request: Request) -> CognitoToken:
+    def auth_required(self, request: Request) -> Any:
         """
         Get token from request `Authorization` header use `_verify_header` to
         verify value, extract token payload with `_decode_token` and return
@@ -210,4 +238,4 @@ class CognitoAuth(object):
             payload = self._decode_token(token=token)
         except CognitoJWTException as error:
             raise HTTPException(status_code=401, detail=str(error))
-        return CognitoToken(**payload)
+        return self._custom_cognito_token_model(**payload)

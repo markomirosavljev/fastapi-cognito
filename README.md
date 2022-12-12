@@ -103,3 +103,42 @@ from fastapi import Depends
 def hello_world(auth: CognitoToken = Depends(cognito_eu.auth_optional)):
     return {"message": "Hello world"}
 ```
+
+### Custom Token Model
+
+In case your token payload contains additional values, you can provide custom
+token model instead of `CognitoToken`. If there is no custom token model
+provided, `CognitoToken` will be set as a default model.
+
+Example:
+```python
+class CustomTokenModel(CognitoToken):
+    custom_value: Optional[str]
+
+
+class Settings(BaseSettings):
+    check_expiration = True
+    jwt_header_prefix = "Bearer"
+    jwt_header_name = "Authorization"
+    userpools = {
+        "eu": {
+            "region": "USERPOOL_REGION",
+            "userpool_id": "USERPOOL_ID",
+            "app_client_id": "APP_CLIENT_ID"
+        },
+        "us": {
+            "region": "USERPOOL_REGION",
+            "userpool_id": "USERPOOL_ID",
+            "app_client_id": "APP_CLIENT_ID"
+        }
+    }
+    custom_cognito_token_model: PyObject = CustomTokenModel
+
+@app.get("/")
+def hello_world(auth: CustomTokenModel = Depends(cognito_us.auth_required)):
+    return {"message": f"Hello {auth.custom_value}"}
+```
+**NOTE: It is important to set `custom_cognito_token_model` type in BaseSettings
+to `PyObject`**. In order to have type hints, you need to set your custom model
+as type of `auth`.
+
