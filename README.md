@@ -36,6 +36,8 @@ All fields shown in example below, are also required in .json or .yaml file
 You should also import BaseSettings from pydantic if you are going to use global BaseSettings object.
 * Provide settings that are mandatory for CognitoAuth to work. You can provide
 one or more userpools.
+  * `app_client_id` field for userpool besides string, can contain multiple string values provided within 
+    list, tuple or set
 
 ```python
 from pydantic import BaseSettings
@@ -48,7 +50,7 @@ class Settings(BaseSettings):
         "eu": {
             "region": "USERPOOL_REGION",
             "userpool_id": "USERPOOL_ID",
-            "app_client_id": "APP_CLIENT_ID"
+            "app_client_id": ["APP_CLIENT_ID_1", "APP_CLIENT_ID_2"] # Example with multiple ids
         },
         "us": {
             "region": "USERPOOL_REGION",
