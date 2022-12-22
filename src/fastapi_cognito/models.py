@@ -1,4 +1,4 @@
-from typing import Union, Dict, List, Set, Any, Optional
+from typing import Union, List, Set, Optional, Tuple
 
 from pydantic import BaseModel, HttpUrl, Field
 
@@ -6,7 +6,7 @@ from pydantic import BaseModel, HttpUrl, Field
 class UserpoolModel(BaseModel):
     region: str
     userpool_id: str
-    app_client_id: Union[str, List[str], Set[str], Dict[str, Any]]
+    app_client_id: Union[str, List[str], Set[str], Tuple[str]]
 
 
 class CognitoToken(BaseModel):
