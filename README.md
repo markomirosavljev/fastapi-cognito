@@ -40,7 +40,7 @@ one or more userpools.
     list, tuple or set
 
 ```python
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings
 from pydantic.types import Any
 
 class Settings(BaseSettings):

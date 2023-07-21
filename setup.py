@@ -28,7 +28,7 @@ setuptools.setup(
         "fastapi",
         "cognitojwt[async]==1.4.1",
         "pyYAML >=5.3.1",
-        "pydantic >=2.0.0"
+        "pydantic >=2.0.0",
         "pydantic-settings >=2.0.0"
     ],
     python_requires=">=3.8",
