@@ -10,9 +10,9 @@ class UserpoolModel(BaseModel):
 
 
 class CognitoToken(BaseModel):
-    origin_jti: str
+    origin_jti: Optional[str] = None
     cognito_id: str = Field(alias="sub")
-    event_id: Optional[str]
+    event_id: Optional[str] = None
     token_use: str
     scope: str
     auth_time: int

@@ -41,12 +41,13 @@ one or more userpools.
 
 ```python
 from pydantic import BaseSettings
+from pydantic.types import Any
 
 class Settings(BaseSettings):
-    check_expiration = True
-    jwt_header_prefix = "Bearer"
-    jwt_header_name = "Authorization"
-    userpools = {
+    check_expiration: bool = True
+    jwt_header_prefix: str = "Bearer"
+    jwt_header_name: str = "Authorization"
+    userpools: dict[str, dict[str, Any]] = {
         "eu": {
             "region": "USERPOOL_REGION",
             "userpool_id": "USERPOOL_ID",
@@ -74,8 +75,12 @@ If we were using .yaml or .json, we should call **.from_yaml(_filename_)** or
 from fastapi_cognito import CognitoAuth, CognitoSettings
 
 # default userpool(eu) will be used if there is no userpool_name param provided.
-cognito_eu = CognitoAuth(settings=CognitoSettings.from_global_settings(settings))
-cognito_us = CognitoAuth(settings=CognitoSettings.from_global_settings(settings), userpool_name="us")
+cognito_eu = CognitoAuth(
+  settings=CognitoSettings.from_global_settings(settings)
+)
+cognito_us = CognitoAuth(
+  settings=CognitoSettings.from_global_settings(settings), userpool_name="us"
+)
 ```
 
 * This is a simple endpoint that is protected by Cognito, it uses FastAPI 
@@ -110,37 +115,22 @@ def hello_world(auth: CognitoToken = Depends(cognito_eu.auth_optional)):
 
 In case your token payload contains additional values, you can provide custom
 token model instead of `CognitoToken`. If there is no custom token model
-provided, `CognitoToken` will be set as a default model.
+provided, `CognitoToken` will be set as a default model. Custom model should
+be provided to `CognitoAuth` object.
 
 Example:
 ```python
 class CustomTokenModel(CognitoToken):
-    custom_value: Optional[str]
+    custom_value: Optional[str] = None
 
 
-class Settings(BaseSettings):
-    check_expiration = True
-    jwt_header_prefix = "Bearer"
-    jwt_header_name = "Authorization"
-    userpools = {
-        "eu": {
-            "region": "USERPOOL_REGION",
-            "userpool_id": "USERPOOL_ID",
-            "app_client_id": "APP_CLIENT_ID"
-        },
-        "us": {
-            "region": "USERPOOL_REGION",
-            "userpool_id": "USERPOOL_ID",
-            "app_client_id": "APP_CLIENT_ID"
-        }
-    }
-    custom_cognito_token_model: PyObject = CustomTokenModel
+cognito = CognitoAuth(
+    settings=CognitoSettings.from_global_settings(settings),
+    # Here we provide custom token model
+    custom_model=CustomTokenModel
+)
 
 @app.get("/")
-def hello_world(auth: CustomTokenModel = Depends(cognito_us.auth_required)):
+def hello_world(auth: CustomTokenModel = Depends(cognito.auth_required)):
     return {"message": f"Hello {auth.custom_value}"}
 ```
-**NOTE: It is important to set `custom_cognito_token_model` type in BaseSettings
-to `PyObject`**. In order to have type hints, you need to set your custom model
-as type of `auth`.
-

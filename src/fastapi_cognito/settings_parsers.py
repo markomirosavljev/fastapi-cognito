@@ -1,7 +1,8 @@
-import yaml
 import json
-from pydantic import BaseSettings, PyObject
-from typing import Dict, Optional
+from typing import Any
+
+import yaml
+from pydantic_settings import BaseSettings
 
 
 class CognitoSettings(BaseSettings):
@@ -12,8 +13,7 @@ class CognitoSettings(BaseSettings):
     check_expiration: bool
     jwt_header_name: str
     jwt_header_prefix: str
-    userpools: Dict
-    custom_cognito_token_model: Optional[PyObject]
+    userpools: dict[str, dict[str, Any]]
 
     class Config:
         extra = "ignore"
@@ -26,7 +26,7 @@ class CognitoSettings(BaseSettings):
         :param global_settings: global BaseSettings object.
         :return: mapped CognitoSettings class
         """
-        return cls(**global_settings.dict())
+        return cls(**global_settings.model_dump())
 
     @classmethod
     def load_yaml(cls, yaml_file: str):

@@ -1,5 +1,7 @@
+from typing import Any
+
 from fastapi import FastAPI, Depends
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings
 
 from fastapi_cognito import CognitoAuth, CognitoSettings, CognitoToken
 
@@ -7,10 +9,10 @@ app = FastAPI()
 
 
 class Settings(BaseSettings):
-    check_expiration = True
-    jwt_header_prefix = "Bearer"
-    jwt_header_name = "Authorization"
-    userpools = {
+    check_expiration: bool = True
+    jwt_header_prefix: str = "Bearer"
+    jwt_header_name: str = "Authorization"
+    userpools: dict[str, dict[str, Any]] = {
         "eu": {
             "region": "USERPOOL_REGION",
             "userpool_id": "USERPOOL_ID",
