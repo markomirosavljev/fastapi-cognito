@@ -4,7 +4,6 @@ from cognitojwt import CognitoJWTException, decode_async as cognito_jwt_decode
 from fastapi.exceptions import HTTPException
 from jose import JWTError
 from pydantic_settings import BaseSettings
-from requests.exceptions import ConnectionError as HttpConnectionError
 from starlette.requests import Request
 
 from .exceptions import CognitoAuthError
@@ -198,12 +197,6 @@ class CognitoAuth(object):
             raise HTTPException(
                 status_code=401,
                 detail="Malformed authentication token"
-            )
-        except HttpConnectionError:
-            raise HTTPException(
-                status_code=500,
-                detail="Unable to establish connection with AWS, "
-                       "your userpool region config might be incorrect."
             )
 
     async def auth_optional(self, request: Request) -> Any:
