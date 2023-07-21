@@ -26,8 +26,10 @@ setuptools.setup(
     py_modules=["fastapi_cognito"],
     install_requires=[
         "fastapi",
-        "cognitojwt[sync]==1.4.1",
-        "pyYAML"
+        "cognitojwt[async]==1.4.1",
+        "pyYAML >=5.3.1",
+        "pydantic >=2.0.0"
+        "pydantic-settings >=2.0.0"
     ],
     python_requires=">=3.8",
 )

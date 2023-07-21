@@ -1,9 +1,9 @@
 from typing import Dict, Any
 
-from cognitojwt import CognitoJWTException, decode as cognito_jwt_decode
+from cognitojwt import CognitoJWTException, decode_async as cognito_jwt_decode
 from fastapi.exceptions import HTTPException
 from jose import JWTError
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings
 from requests.exceptions import ConnectionError as HttpConnectionError
 from starlette.requests import Request
 
@@ -16,19 +16,29 @@ class CognitoAuth(object):
     Base class which handles config and provides required methods.
     """
 
-    def __init__(self, settings: BaseSettings, userpool_name: str = None):
+    def __init__(
+            self,
+            settings: BaseSettings,
+            userpool_name: str = None,
+            custom_model=None
+    ):
         """
         Initialization
         :param settings: BaseSettings object with configurations
         :param userpool_name: Optional param which determines which userpool
          configuration to apply.
+        :param custom_model: Custom Pydantic model that should be used to parse
+         token claims
         """
         self._userpool_name: str = userpool_name
         self._userpool: UserpoolModel
         self._jwt_header_name: str
         self._jwt_header_prefix: str
         self._check_expiration: bool
-        self._custom_cognito_token_model: object
+        if custom_model:
+            self._cognito_token_model = custom_model
+        else:
+            self._cognito_token_model = CognitoToken
 
         self._add_settings(settings)
 
@@ -56,11 +66,6 @@ class CognitoAuth(object):
         self._check_expiration = self._get_required_setting(
             settings=settings,
             config="check_expiration"
-        )
-        self._custom_cognito_token_model = self._get_optional_setting(
-            settings=settings,
-            config="custom_cognito_token_model",
-            default_value=CognitoToken
         )
 
     @staticmethod
@@ -168,7 +173,7 @@ class CognitoAuth(object):
 
         return header_parts[1]
 
-    def _decode_token(self, token) -> Dict:
+    async def _decode_token(self, token) -> Dict:
         """
         This method will use cognito_jwt_decode to decode token and verify if
         token is valid
@@ -176,7 +181,7 @@ class CognitoAuth(object):
         :return: decoded and verified cognito token or 401.
         """
         try:
-            return cognito_jwt_decode(
+            return await cognito_jwt_decode(
                 token=token,
                 region=self._userpool.region,
                 userpool_id=self._userpool.userpool_id,
@@ -201,7 +206,7 @@ class CognitoAuth(object):
                        "your userpool region config might be incorrect."
             )
 
-    def auth_optional(self, request: Request) -> Any:
+    async def auth_optional(self, request: Request) -> Any:
         """
         Optional authentication, method will try to parse `Authorization` header
         if present, else it will return None
@@ -218,12 +223,12 @@ class CognitoAuth(object):
         token = self._verify_header(auth_header_value=authorization_header)
 
         try:
-            payload = self._decode_token(token=token)
+            payload = await self._decode_token(token=token)
         except CognitoJWTException as error:
             raise HTTPException(status_code=401, detail=str(error))
-        return self._custom_cognito_token_model(**payload)
+        return self._cognito_token_model(**payload)
 
-    def auth_required(self, request: Request) -> Any:
+    async def auth_required(self, request: Request) -> Any:
         """
         Get token from request `Authorization` header use `_verify_header` to
         verify value, extract token payload with `_decode_token` and return
@@ -235,7 +240,7 @@ class CognitoAuth(object):
         )
 
         try:
-            payload = self._decode_token(token=token)
+            payload = await self._decode_token(token=token)
         except CognitoJWTException as error:
             raise HTTPException(status_code=401, detail=str(error))
-        return self._custom_cognito_token_model(**payload)
+        return self._cognito_token_model(**payload)
