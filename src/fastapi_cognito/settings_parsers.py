@@ -2,7 +2,7 @@ import json
 from typing import Any
 
 import yaml
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class CognitoSettings(BaseSettings):
@@ -10,13 +10,12 @@ class CognitoSettings(BaseSettings):
     This class contains all mandatory fields which should get values from
     provided config file
     """
+    model_config = SettingsConfigDict(extra="ignore")
+
     check_expiration: bool
     jwt_header_name: str
     jwt_header_prefix: str
     userpools: dict[str, dict[str, Any]]
-
-    class Config:
-        extra = "ignore"
 
     @classmethod
     def from_global_settings(cls, global_settings: BaseSettings):
