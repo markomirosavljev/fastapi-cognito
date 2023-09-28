@@ -193,7 +193,7 @@ class CognitoAuth(object):
                 detail="Unable to get userpool key,"
                        " your userpool_id config might be incorrect."
             )
-        except (ValueError, JWTError):
+        except (ValueError, JWTError, KeyError):
             raise HTTPException(
                 status_code=401,
                 detail="Malformed authentication token"
