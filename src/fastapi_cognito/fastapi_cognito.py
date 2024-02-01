@@ -201,6 +201,11 @@ class CognitoAuth(object):
                 status_code=401,
                 detail="Malformed authentication token"
             )
+        except Exception as error:
+            raise HTTPException(
+                status_code=401,
+                detail="Error decoding token"
+            ) from error
 
     async def auth_optional(self, request: Request) -> Any:
         """
