@@ -142,7 +142,10 @@ class CognitoAuth(object):
                 detail="Request does not contain well-formed Cognito JWT"
             )
 
-        header_parts = auth_header_value.split()
+        if not self._jwt_header_prefix:
+            header_parts = ["", auth_header_value]
+        else:
+            header_parts = auth_header_value.split()
         if self._jwt_header_prefix not in header_parts:
             raise HTTPException(
                 status_code=401,
@@ -198,6 +201,11 @@ class CognitoAuth(object):
                 status_code=401,
                 detail="Malformed authentication token"
             )
+        except Exception as error:
+            raise HTTPException(
+                status_code=401,
+                detail="Error decoding token"
+            ) from error
 
     async def auth_optional(self, request: Request) -> Any:
         """
