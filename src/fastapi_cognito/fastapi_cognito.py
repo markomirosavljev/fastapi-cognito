@@ -199,6 +199,12 @@ class CognitoAuth(object):
                 detail="Malformed authentication token"
             )
 
+        except Exception as error:
+            raise HTTPException(
+                status_code=401,
+                detail="Error decoding JWT token."
+            ) from error
+
     async def auth_optional(self, request: Request) -> Any:
         """
         Optional authentication, method will try to parse `Authorization` header
