@@ -1,6 +1,36 @@
-[build-system]
-requires = [
-    "setuptools>=42",
-    "wheel"
+[tool.poetry]
+name = "fastapi-cognito"
+version = "2.4.2"
+description = "Basic AWS cognito authentication package for FastAPI"
+authors = ["Marko Mirosavljev <mirosavljevm023@gmail.com>"]
+maintainers = ["Marko Mirosavljev <mirosavljevm023@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/markomirosavljev/fastapi-cognito"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Operating System :: OS Independent",
+    "Framework :: FastAPI",
+    "Intended Audience :: Developers"
 ]
-build-backend = "setuptools.build_meta"
+packages = [
+    { include = "fastapi_cognito", from = "src" }
+]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+fastapi = "^0.111.0"
+pydantic = "^2.7.1"
+pydantic-settings = "^2.2.1"
+pyyaml = "^6.0.1"
+cognitojwt = { version = "1.4.1", extras = ["async"] }
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
