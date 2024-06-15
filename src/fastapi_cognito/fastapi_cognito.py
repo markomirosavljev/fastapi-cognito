@@ -1,11 +1,11 @@
 from typing import Dict, Any
 
-from cognitojwt import CognitoJWTException, decode_async as cognito_jwt_decode
 from fastapi.exceptions import HTTPException
-from jose import JWTError
 from pydantic_settings import BaseSettings
 from starlette.requests import Request
 
+from .cognito_jwt.decode import decode_cognito_jwt
+from .cognito_jwt.exceptions import CognitoJWTException
 from .exceptions import CognitoAuthError
 from .models import UserpoolModel, CognitoToken
 
@@ -180,7 +180,7 @@ class CognitoAuth(object):
         :return: decoded and verified cognito token or 401.
         """
         try:
-            return await cognito_jwt_decode(
+            return await decode_cognito_jwt(
                 token=token,
                 region=self._userpool.region,
                 userpool_id=self._userpool.userpool_id,
@@ -193,10 +193,16 @@ class CognitoAuth(object):
                 detail="Unable to get userpool key,"
                        " your userpool_id config might be incorrect."
             )
-        except (ValueError, JWTError):
+        except ValueError:
             raise HTTPException(
                 status_code=401,
                 detail="Malformed authentication token"
+            )
+
+        except CognitoJWTException as e:
+            raise HTTPException(
+                status_code=401,
+                detail=str(e)
             )
 
         except Exception as error:
