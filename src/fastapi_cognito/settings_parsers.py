@@ -1,5 +1,5 @@
 import json
-from typing import Any
+from typing import Any, Dict
 
 import yaml
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -15,7 +15,7 @@ class CognitoSettings(BaseSettings):
     check_expiration: bool
     jwt_header_name: str
     jwt_header_prefix: str
-    userpools: dict[str, dict[str, Any]]
+    userpools: Dict[str, dict[str, Any]]
 
     @classmethod
     def from_global_settings(cls, global_settings: BaseSettings):

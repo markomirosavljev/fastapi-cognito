@@ -1,7 +1,7 @@
 # FastAPI - Cognito
-FastAPI package that ease usage of AWS Cognito Auth.
-This package provides basic functions/tools which helps developers to use
-Cognito JWT.
+FastAPI library that ease usage of AWS Cognito Auth.
+This library provides basic functionalities for decoding, validation and parsing
+Cognito JWT tokens and for now it does not support sign up and sign in features.
 
 ## Requirements
 
@@ -27,13 +27,12 @@ app = FastAPI()
 All mandatory fields are added in CognitoSettings
 BaseSettings object. Settings can be added in different ways.
 You can provide all required settings in **.yaml** or **.json** files,
-or your global BaseSettings file. Note that userpools field is Dict,
+or your global BaseSettings object. Note that `userpools` field is Dict and
 **FIRST** user pool in a dict will be set as default automatically if
-userpool_name is not provided in CognitoAuth object.
+`userpool_name` is not provided in CognitoAuth object.
 All fields shown in example below, are also required in .json or .yaml file
 (with syntax matching those files.)
 
-You should also import BaseSettings from pydantic if you are going to use global BaseSettings object.
 * Provide settings that are mandatory for CognitoAuth to work. You can provide
 one or more userpools.
   * `app_client_id` field for userpool besides string, can contain multiple string values provided within 
@@ -66,8 +65,8 @@ settings = Settings()
   
 This example below shows how global BaseSettings object can be mapped to
 CognitoSettings and passed as param to CognitoAuth.
-If we were using .yaml or .json, we should call **.from_yaml(_filename_)** or
-**.from_json(_filename_)** methods on CognitoSettings object.
+If we were using .yaml or .json, we should call **.from_yaml(_path_)** or
+**.from_json(_path_)** methods on CognitoSettings object.
 
 * Instantiate CognitoAuth and pass previously created settings as settings param.
   
@@ -83,10 +82,8 @@ cognito_us = CognitoAuth(
 )
 ```
 
-* This is a simple endpoint that is protected by Cognito, it uses FastAPI 
+* This is a simple endpoint that requires authentication, it uses FastAPI 
 dependency injection to resolve all required operations and get Cognito JWT.
-It can be used later to add more security to endpoints and to get required
-data about user which token belongs to.
   
 ```python
 from fastapi_cognito import CognitoToken
@@ -112,11 +109,13 @@ def hello_world(auth: CognitoToken = Depends(cognito_eu.auth_optional)):
 ```
 
 ### Custom Token Model
+This feature adds possiblity to use any token type for authentication(e.g. parsing ID token).
 
 In case your token payload contains additional values, you can provide custom
 token model instead of `CognitoToken`. If there is no custom token model
 provided, `CognitoToken` will be set as a default model. Custom model should
-be provided to `CognitoAuth` object.
+be provided to `CognitoAuth` object, and should be set as type of `auth` 
+variable for endpoint dependency.
 
 Example:
 ```python
@@ -131,6 +130,41 @@ cognito = CognitoAuth(
 )
 
 @app.get("/")
+# Type of `auth` should be custom token Class
 def hello_world(auth: CustomTokenModel = Depends(cognito.auth_required)):
     return {"message": f"Hello {auth.custom_value}"}
 ```
+
+#### Custom Cognito attributes
+Custom attributes in Cognito starts with `custom:`, which is the issue for 
+parsing this variable with pydantic because of the colon. To parse custom 
+attributes, add the full name of Cognito attribute to Pydantic Field alias.
+
+```python
+class CustomTokenModel(CognitoToken):
+    custom_value: Optional[str] = Field(alias="custom:custom_attr")
+```
+Pydantic will automatically parse value by alias if specified. Make sure that
+you have default value set if attribute is optional.
+
+### OpenAPI docs authentication 
+To use tokens to authenticate requests using OpenAPI docs, you can
+create wrapper class. 
+```python
+from fastapi.security import HTTPBearer
+from starlette.requests import Request
+from fastapi_cognito import CognitoToken
+
+class CognitoAuth(HTTPBearer):
+    async def __call__(self, request: Request) -> CognitoToken:
+        return await cognito.auth_required(request=request)
+
+cognito_auth = CognitoAuth()
+
+@router.get("/")
+async def test_endpoint(auth: CognitoToken = Depends(cognito_auth)):
+    return JSONResponse(
+        status_code=200, content={"detail": "Success"}
+    )
+```
+This will show button for adding authentication token to the request.
