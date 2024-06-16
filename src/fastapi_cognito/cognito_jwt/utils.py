@@ -78,7 +78,7 @@ def __get_token_header(jwt: str) -> Dict[str, str]:
     try:
         header = json.loads(header_data.decode("utf-8"))
     except ValueError as e:
-        raise CognitoJWTException("Invalid header string: {}".format(e))
+        raise CognitoJWTException(f"Invalid header string: {e}")
 
     return header
 
