@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "fastapi-cognito"
 version = "2.5.0"
-description = "Basic AWS cognito authentication package for FastAPI"
+description = "AWS Cognito JWT authentication library for FastAPI"
 authors = ["Marko Mirosavljev <mirosavljevm023@gmail.com>"]
 maintainers = ["Marko Mirosavljev <mirosavljevm023@gmail.com>"]
 license = "MIT"
