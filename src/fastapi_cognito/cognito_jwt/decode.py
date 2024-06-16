@@ -6,7 +6,7 @@ import aiohttp
 from aiofile import AIOFile
 from async_lru import alru_cache
 from joserfc import jwk, jwt
-from joserfc.errors import InvalidPayloadError, BadSignatureError
+from joserfc.errors import BadSignatureError
 
 from fastapi_cognito.cognito_jwt.constants import PUBLIC_KEYS_URL_TEMPLATE
 from fastapi_cognito.cognito_jwt.exceptions import CognitoJWTException
@@ -51,8 +51,7 @@ async def __get_public_key_async(token: str, region: str, userpool_id: str):
     key = list(filter(lambda k: k["kid"] == kid, keys))
     if not key:
         raise CognitoJWTException(
-            "Public key not found in jwks.json,"
-            " token might not be issued for this userpool configuration."
+            "Public key not found, check userpool configuration."
         )
     else:
         key = key[0]

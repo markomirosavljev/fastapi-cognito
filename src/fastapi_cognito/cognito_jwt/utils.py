@@ -46,7 +46,7 @@ def check_client_id(
         )
 
 
-def base64url_decode(value: str) -> bytes:
+def __base64url_decode(value: str) -> bytes:
     """
     Decodes token header and claims and fix padding if not correct
     """
@@ -69,7 +69,7 @@ def __get_token_header(jwt: str) -> Dict[str, str]:
     try:
         signing_input, crypto_segment = jwt.rsplit(b".", 1)
         header_segment, claims_segment = signing_input.split(b".", 1)
-        header_data = base64url_decode(header_segment)
+        header_data = __base64url_decode(header_segment)
     except ValueError:
         raise CognitoJWTException("Not enough segments.")
     except (TypeError, binascii.Error):
