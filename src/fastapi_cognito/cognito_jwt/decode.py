@@ -2,7 +2,7 @@ import json
 import os
 from typing import Dict, Container, Optional, Union, List, Mapping
 
-import aiohttp
+import httpx
 from aiofile import AIOFile
 from async_lru import alru_cache
 from joserfc import jwk, jwt
@@ -14,7 +14,7 @@ from fastapi_cognito.cognito_jwt.utils import check_expired, check_client_id, \
     get_unverified_token_header
 
 
-@alru_cache(maxsize=1)
+@alru_cache(maxsize=10)
 async def __get_keys_async(keys_url: str) -> List[dict]:
     """
     Retrieves public keys from AWS Cognito or read from file
@@ -22,14 +22,14 @@ async def __get_keys_async(keys_url: str) -> List[dict]:
     :return: List of public keys
     """
     if keys_url.startswith("http"):
-        async with aiohttp.ClientSession() as session:
-            async with session.get(keys_url) as resp:
-                response = await resp.json()
+        async with httpx.AsyncClient() as client:
+            response = await client.get(keys_url)
+            data = response.json()
     else:
         async with AIOFile(keys_url, 'r') as afp:
             f = await afp.read()
-            response = json.loads(f)
-    return response.get('keys')
+            data = json.loads(f)
+    return data.get('keys')
 
 
 async def __get_public_key_async(token: str, region: str, userpool_id: str):
