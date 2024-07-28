@@ -168,3 +168,33 @@ async def test_endpoint(auth: CognitoToken = Depends(cognito_auth)):
     )
 ```
 This will show button for adding authentication token to the request.
+
+### Using custom JWKS URL for userpool
+If you need to use custom JWKS URL for userpool, for example when you're running
+cognito-local for local development, you can specify JWKS_URL configuration per
+userpool. 
+```python
+class Settings(BaseSettings):
+    userpools: dict[str, dict[str, Any]] = {
+        "eu": {
+            "region": "USERPOOL_REGION",
+            "userpool_id": "USERPOOL_ID",
+            "app_client_id": "APP_CLIENT_ID",
+            "jwks_url": "https://local-cognito-idp:port/jwks.json"
+        }
+        ...
+    }
+```
+By setting this configuration, CognitoAuth will automatically use this url to
+retrieve JWKS for userpool. If configuration is not set, CognitoAuth will 
+generate URL in the following format 
+`https://cognito-idp.<region>.amazonaws.com/<userpool_id>/.well-known/jwks.json`
+and will use that URL to retrieve JWKS.
+
+There is global configuration through environment variable 
+`AWS_COGNITO_KEYS_URL` which is supported for backward 
+compatibility with previous dependency on `cognitojwt` library. 
+CognitoAuth will prioritise in the following order:
+* `jwks_url` configuration per userpool,
+* `AWS_COGNITO_KEYS_URL` environment variable if set,
+* default value of `https://cognito-idp.<region>.amazonaws.com/<userpool_id>/.well-known/jwks.json`

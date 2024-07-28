@@ -49,20 +49,20 @@ class CognitoAuth(object):
          provided.
         :return: None
         """
-        self._userpool = self._get_required_setting(
+        self._userpool: UserpoolModel = self._get_required_setting(
             settings=settings,
             config="userpools",
             config_key=self._userpool_name
         )
-        self._jwt_header_name = self._get_required_setting(
+        self._jwt_header_name: str = self._get_required_setting(
             settings=settings,
             config="jwt_header_name"
         )
-        self._jwt_header_prefix = self._get_required_setting(
+        self._jwt_header_prefix: str = self._get_required_setting(
             settings=settings,
             config="jwt_header_prefix"
         )
-        self._check_expiration = self._get_required_setting(
+        self._check_expiration: bool = self._get_required_setting(
             settings=settings,
             config="check_expiration"
         )
@@ -185,7 +185,8 @@ class CognitoAuth(object):
                 region=self._userpool.region,
                 userpool_id=self._userpool.userpool_id,
                 app_client_id=self._userpool.app_client_id,
-                testmode=not self._check_expiration
+                testmode=not self._check_expiration,
+                jwks_url=self._userpool.jwks_url
             )
         except TypeError:
             raise HTTPException(
