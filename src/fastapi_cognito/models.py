@@ -7,6 +7,7 @@ class UserpoolModel(BaseModel):
     region: str
     userpool_id: str
     app_client_id: Union[str, List[str], Set[str], Tuple[str]]
+    jwks_url: Optional[str] = Field(default=None)
 
 
 class CognitoToken(BaseModel):
