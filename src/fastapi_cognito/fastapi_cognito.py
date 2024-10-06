@@ -199,13 +199,6 @@ class CognitoAuth(object):
                 status_code=401,
                 detail="Malformed authentication token"
             )
-
-        except CognitoJWTException as e:
-            raise HTTPException(
-                status_code=401,
-                detail=str(e)
-            )
-
         except Exception as error:
             raise HTTPException(
                 status_code=401,
