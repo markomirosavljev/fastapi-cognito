@@ -2,7 +2,7 @@ from typing import Dict, Any
 
 from fastapi.exceptions import HTTPException
 from pydantic_settings import BaseSettings
-from starlette.requests import Request
+from starlette.requests import HTTPConnection
 
 from .cognito_jwt.decode import decode_cognito_jwt
 from .cognito_jwt.exceptions import CognitoJWTException
@@ -205,7 +205,7 @@ class CognitoAuth(object):
                 detail="Error decoding JWT token."
             ) from error
 
-    async def auth_optional(self, request: Request) -> Any:
+    async def auth_optional(self, request: HTTPConnection) -> Any:
         """
         Optional authentication, method will try to parse `Authorization` header
         if present, else it will return None
@@ -227,7 +227,7 @@ class CognitoAuth(object):
             raise HTTPException(status_code=401, detail=str(error))
         return self._cognito_token_model(**payload)
 
-    async def auth_required(self, request: Request) -> Any:
+    async def auth_required(self, request: HTTPConnection) -> Any:
         """
         Get token from request `Authorization` header use `_verify_header` to
         verify value, extract token payload with `_decode_token` and return
