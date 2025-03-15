@@ -1,0 +1,38 @@
+{
+  "Clients": {
+    "5021s8dh9hnskm0zgrwl0pvco": {
+      "ClientId": "5021s8dh9hnskm0zgrwl0pvco",
+      "ClientName": "us-app-client",
+      "ClientSecret": "1ylcgl9fdcg70suezk9ijq09c",
+      "CreationDate": "2025-03-15T13:25:12.991Z",
+      "ExplicitAuthFlows": [
+        "ALLOW_USER_PASSWORD_AUTH",
+        "ALLOW_REFRESH_TOKEN_AUTH"
+      ],
+      "LastModifiedDate": "2025-03-15T13:25:12.991Z",
+      "TokenValidityUnits": {
+        "AccessToken": "hours",
+        "IdToken": "minutes",
+        "RefreshToken": "days"
+      },
+      "UserPoolId": "local_4Wg2XYXC"
+    },
+    "75eys17xtiq3hyfo9co7d1zti": {
+      "ClientId": "75eys17xtiq3hyfo9co7d1zti",
+      "ClientName": "eu-app-client",
+      "ClientSecret": "ahqk5uugntut1ysr9xlnesydf",
+      "CreationDate": "2025-03-15T13:25:41.725Z",
+      "ExplicitAuthFlows": [
+        "ALLOW_USER_PASSWORD_AUTH",
+        "ALLOW_REFRESH_TOKEN_AUTH"
+      ],
+      "LastModifiedDate": "2025-03-15T13:25:41.725Z",
+      "TokenValidityUnits": {
+        "AccessToken": "hours",
+        "IdToken": "minutes",
+        "RefreshToken": "days"
+      },
+      "UserPoolId": "local_75ELcB6t"
+    }
+  }
+}

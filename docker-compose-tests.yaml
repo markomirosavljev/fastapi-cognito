@@ -1,0 +1,10 @@
+services:
+  cognito:
+    image: jagregory/cognito-local:5.0.0
+    ports:
+    - 9229:9229
+    volumes:
+    - ./etc/cognito_local:/app/.cognito
+  fastapi_cognito_tests:
+    build: {}
+    

@@ -33,6 +33,13 @@ async-lru = ">=2.0.4"
 joserfc = ">=0.9.0"
 httpx = ">=0.27.0"
 
+[tool.poetry.group.test]
+optional = true
+
+[tool.poetry.group.test.dependencies]
+uvicorn = {extras=["standard"], version = "^0.33"}
+pytest = "^8.3.5"
+boto3 = "^1.37.13"
 
 [build-system]
 requires = ["poetry-core"]
