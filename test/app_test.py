@@ -20,7 +20,7 @@ us_token = boto.generate_access_token(
 
 def test_no_header():
     resp = t_client.get("/eu")
-    assert resp.status_code == 402
+    assert resp.status_code == 401
     assert resp.json() == {"detail": "Request does not contain well-formed Cognito JWT"}
 
 def test_default_pool():

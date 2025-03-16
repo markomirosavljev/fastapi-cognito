@@ -16,7 +16,7 @@ jobs:
       - name: checkout
         uses: actions/checkout@v4
 
-      - name: run containers
+      - name: run tests
         run: docker compose -f docker-compose-tests.yaml up --build --exit-code-from fastapi_cognito_tests --abort-on-container-exit
 
       - name: stop containers
