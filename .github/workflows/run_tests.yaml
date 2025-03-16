@@ -1,0 +1,25 @@
+name: Run tests
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+jobs:
+  run_tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: run tests
+        run: docker compose -f docker-compose-tests.yaml up --build --exit-code-from fastapi_cognito_tests --abort-on-container-exit
+
+      - name: stop containers
+        if: always()
+        run: docker compose -f docker-compose-tests.yaml down
+  
