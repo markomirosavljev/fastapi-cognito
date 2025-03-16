@@ -17,13 +17,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: run containers
-        run: docker compose -f docker-compose-tests.yaml up -d --build
-
-      - name: list containers
-        run: docker ps -a
-
-      - name: report status
-        run: docker logs fastapi-cognito-fastapi_cognito_tests-1
+        run: docker compose -f docker-compose-tests.yaml up --build --exit-code-from fastapi_cognito_tests --abort-on-container-exit
 
       - name: stop containers
         if: always()
