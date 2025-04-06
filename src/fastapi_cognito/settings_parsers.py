@@ -15,7 +15,7 @@ class CognitoSettings(BaseSettings):
     check_expiration: bool
     jwt_header_name: str
     jwt_header_prefix: str
-    userpools: Dict[str, dict[str, Any]]
+    userpools: Dict[str, Dict[str, Any]]
 
     @classmethod
     def from_global_settings(cls, global_settings: BaseSettings):
