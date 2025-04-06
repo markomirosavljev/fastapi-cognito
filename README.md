@@ -3,6 +3,8 @@ FastAPI library that ease usage of AWS Cognito Auth.
 This library provides basic functionalities for decoding, validation and parsing
 Cognito JWT tokens and for now it does not support sign up and sign in features.
 
+Library supports both HTTP and WebSocket connection auth.
+
 ## Requirements
 
 * Python >=3.8
