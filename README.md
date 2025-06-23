@@ -39,6 +39,7 @@ All fields shown in example below, are also required in .json or .yaml file
 one or more userpools.
   * `app_client_id` field for userpool besides string, can contain multiple string values provided within 
     list, tuple or set
+  * If you don't need to do extra verification of the `app_client_id` you can either omit it or set to `None`
 
 ```python
 from pydantic_settings import BaseSettings
@@ -59,6 +60,10 @@ class Settings(BaseSettings):
             "userpool_id": "USERPOOL_ID",
             "app_client_id": "APP_CLIENT_ID"
         },
+        "us2": {
+            "region": "USERPOOL_REGION_2",
+            "userpool_id": "USERPOOL_ID"
+        }
         ...
     }
 
