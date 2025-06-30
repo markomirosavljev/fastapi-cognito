@@ -47,3 +47,8 @@ def test_optional_no_token():
     resp = t_client.get("/optional", headers={"Authorization": f"Bearer {eu_token}"})
     assert resp.status_code == 200
     assert resp.json() == {"message": "Hello world"}
+
+def test_pool_without_client_id():
+    resp = t_client.get("/us_no_client_id_check", headers={"Authorization": f"Bearer {us_token}"})
+    assert resp.status_code == 200
+    assert resp.json() == {"message": "Hello world"}
