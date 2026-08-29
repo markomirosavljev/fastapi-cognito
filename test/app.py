@@ -24,6 +24,11 @@ class Settings(BaseSettings):
             "userpool_id": "local_4Wg2XYXC",
             "app_client_id": "5021s8dh9hnskm0zgrwl0pvco",
             "jwks_url": "http://fastapi-cognito-cognito-1:9229/local_4Wg2XYXC/.well-known/jwks.json"
+        },
+        "us_no_client_id_check": {
+            "region": "us-east-1",
+            "userpool_id": "local_4Wg2XYXC",
+            "jwks_url": "http://fastapi-cognito-cognito-1:9229/local_4Wg2XYXC/.well-known/jwks.json"
         }
     }
 
@@ -38,6 +43,10 @@ cognito_us = CognitoAuth(
     userpool_name="us"
 )
 
+cognito_us_no_client_id_check = CognitoAuth(
+    settings=CognitoSettings.from_global_settings(settings),
+    userpool_name="us_no_client_id_check"
+)
 
 @app.get("/eu")
 def hello_world(auth: CognitoToken = Depends(cognito_eu.auth_required)):
@@ -49,4 +58,8 @@ def hello_world(auth: CognitoToken = Depends(cognito_us.auth_required)):
 
 @app.get("/optional")
 def hello_world(auth: CognitoToken = Depends(cognito_eu.auth_optional)):
+    return {"message": "Hello world"}
+
+@app.get("/us_no_client_id_check")
+def hello_world_no_client_id_check(auth: CognitoToken = Depends(cognito_us_no_client_id_check.auth_required)):
     return {"message": "Hello world"}
