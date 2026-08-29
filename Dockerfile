@@ -21,6 +21,7 @@ FROM base AS run
 
 COPY --from=builder $PYSETUP_PATH $PYSETUP_PATH
 
+COPY pyproject.toml /app/pyproject.toml
 COPY test /app/test
 
 WORKDIR /app

@@ -3,7 +3,7 @@ import logging
 import os
 from typing import Dict, Container, Optional, Union, List, Mapping
 
-import httpx
+import httpx2 as httpx
 from aiofile import AIOFile
 from async_lru import alru_cache
 from joserfc import jwk, jwt
