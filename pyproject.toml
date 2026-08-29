@@ -1,6 +1,6 @@
 [project]
 name = "fastapi-cognito"
-version = "2.9.0"
+version = "2.10.0"
 description = "AWS Cognito JWT authentication library for FastAPI"
 authors = [
     { name = "Marko Mirosavljev", email = "mirosavljevm023@gmail.com" }
