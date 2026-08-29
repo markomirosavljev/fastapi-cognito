@@ -5,12 +5,6 @@ Cognito JWT tokens and for now it does not support sign up and sign in features.
 
 Library supports both HTTP and WebSocket connection auth.
 
-## Requirements
-
-* Python >=3.8
-* FastAPI 
-* AWS Cognito Service
-
 ## How to install
 ### Pip Command
 ```
