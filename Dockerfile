@@ -1,4 +1,4 @@
-FROM python:3.12-alpine AS base
+FROM python:3.14-alpine AS base
 
 ENV UV_PROJECT_ENVIRONMENT="/opt/pysetup/.venv" \
     PYSETUP_PATH=/opt/pysetup \

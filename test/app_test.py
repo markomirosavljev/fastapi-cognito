@@ -43,7 +43,7 @@ def test_optional_no_token():
     assert resp.status_code == 200
     assert resp.json() == {"message": "Hello world"}
 
-def test_optional_no_token():
+def test_optional_no_token_eu():
     resp = t_client.get("/optional", headers={"Authorization": f"Bearer {eu_token}"})
     assert resp.status_code == 200
     assert resp.json() == {"message": "Hello world"}
