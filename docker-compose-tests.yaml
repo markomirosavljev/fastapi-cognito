@@ -4,7 +4,15 @@ services:
     ports:
     - 9229:9229
     volumes:
-    - ./etc/cognito_local:/app/.cognito
+    - ./etc/cognito_local:/app/.cognito-seed:ro
+    - cognito-data:/app/.cognito
+    entrypoint: sh
+    command:
+    - -c
+    - "cp -r /app/.cognito-seed/. /app/.cognito/ && exec node /app/start.js"
   fastapi_cognito_tests:
     build: {}
-    
+
+volumes:
+  cognito-data: {}
+

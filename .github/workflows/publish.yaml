@@ -1,0 +1,47 @@
+name: Publish
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: run tests
+        run: make test
+
+      - name: stop containers
+        if: always()
+        run: make test-down
+
+  publish:
+    needs: test
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: set up python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: install poetry
+        run: pipx install poetry
+
+      - name: set version from tag
+        run: poetry version "${GITHUB_REF_NAME#v}"
+
+      - name: build
+        run: poetry build
+
+      - name: publish to pypi
+        uses: pypa/gh-action-pypi-publish@release/v1
