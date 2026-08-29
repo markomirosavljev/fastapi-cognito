@@ -29,19 +29,16 @@ jobs:
       - name: checkout
         uses: actions/checkout@v4
 
-      - name: set up python
-        uses: actions/setup-python@v5
+      - name: install uv
+        uses: astral-sh/setup-uv@v3
         with:
           python-version: "3.12"
 
-      - name: install poetry
-        run: pipx install poetry
-
       - name: set version from tag
-        run: poetry version "${GITHUB_REF_NAME#v}"
+        run: uv version "${GITHUB_REF_NAME#v}"
 
       - name: build
-        run: poetry build
+        run: uv build
 
       - name: publish to pypi
         uses: pypa/gh-action-pypi-publish@release/v1

@@ -1,12 +1,16 @@
-[tool.poetry]
+[project]
 name = "fastapi-cognito"
 version = "2.9.0"
 description = "AWS Cognito JWT authentication library for FastAPI"
-authors = ["Marko Mirosavljev <mirosavljevm023@gmail.com>"]
-maintainers = ["Marko Mirosavljev <mirosavljevm023@gmail.com>"]
+authors = [
+    { name = "Marko Mirosavljev", email = "mirosavljevm023@gmail.com" }
+]
+maintainers = [
+    { name = "Marko Mirosavljev", email = "mirosavljevm023@gmail.com" }
+]
 license = "MIT"
 readme = "README.md"
-repository = "https://github.com/markomirosavljev/fastapi-cognito"
+requires-python = ">=3.8"
 classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.8",
@@ -18,28 +22,29 @@ classifiers = [
     "Framework :: FastAPI",
     "Intended Audience :: Developers"
 ]
-packages = [
-    { include = "fastapi_cognito", from = "src" }
+dependencies = [
+    "fastapi>=0.111.0,<1.0.0",
+    "pydantic>=2.7.1",
+    "pydantic-settings>=2.2.1",
+    "pyyaml>=6.0.1",
+    "aiofile>=3.8.8",
+    "async-lru>=2.0.4",
+    "joserfc>=0.9.0",
+    "httpx>=0.27.0",
 ]
 
-[tool.poetry.dependencies]
-python = "^3.8"
-fastapi = ">=0.111.0,<1.0.0"
-pydantic = ">=2.7.1"
-pydantic-settings = ">=2.2.1"
-pyyaml = ">=6.0.1"
-aiofile = ">=3.8.8"
-async-lru = ">=2.0.4"
-joserfc = ">=0.9.0"
-httpx = ">=0.27.0"
+[project.urls]
+Repository = "https://github.com/markomirosavljev/fastapi-cognito"
 
-[tool.poetry.group.test]
-optional = true
+[dependency-groups]
+test = [
+    "pytest>=8.3.5,<9.0.0",
+    "boto3>=1.37.13,<2.0.0",
+]
 
-[tool.poetry.group.test.dependencies]
-pytest = "^8.3.5"
-boto3 = "^1.37.13"
+[tool.hatch.build.targets.wheel]
+packages = ["src/fastapi_cognito"]
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"

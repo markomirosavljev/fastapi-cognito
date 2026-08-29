@@ -1,24 +1,21 @@
 FROM python:3.12-alpine AS base
 
-ENV POETRY_HOME="/opt/poetry" \
-    POETRY_VIRTUALENVS_IN_PROJECT=true \
+ENV UV_PROJECT_ENVIRONMENT="/opt/pysetup/.venv" \
     PYSETUP_PATH=/opt/pysetup \
     VENV_PATH=/opt/pysetup/.venv
 
-ENV PATH="$PATH:$POETRY_HOME/bin:$VENV_PATH/bin"
+ENV PATH="$PATH:$VENV_PATH/bin"
 
 FROM base AS builder
 
-RUN apk add --update --no-cache curl 
-
-RUN curl -sSL https://install.python-poetry.org | python3 -
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
 WORKDIR $PYSETUP_PATH
 
-COPY README.md pyproject.toml poetry.lock ./
+COPY README.md pyproject.toml uv.lock ./
 COPY src ./src
 
-RUN poetry install --no-interaction --no-ansi --with test
+RUN uv sync --group test
 
 FROM base AS run
 
